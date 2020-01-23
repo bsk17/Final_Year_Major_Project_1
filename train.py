@@ -44,7 +44,7 @@ txt2 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bo
 txt2.place(x=595, y=215)
 
 # to get Class of student
-lbl4 = tk.Label(window, text="Enter Sem-Sec", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
+lbl4 = tk.Label(window, text="Enter Sec-Sem", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
 lbl4.place(x=295, y=300)
 
 txt4 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
@@ -246,7 +246,7 @@ def TrackImages():
     date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
     timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
     # fileName = "Attendance\Attendance_"+date+".csv"
-    filename = xlWrite.output('attendance', xlClass, xlId, xlName, 'yes')
+    filename = xlWrite.output(xlClass + ' Attendance ', xlClass, xlId, xlName, 'yes')
     print(attendance)
 
     cam.release()
