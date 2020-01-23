@@ -5,7 +5,7 @@ from xlutils.copy import copy
 from pathlib import Path
 
 
-def output(filename, xlsheet,num, name, present):
+def output(filename, xlsheet, rollNO, name, present):
     my_file = Path('Attendance/'+filename+str(datetime.now().date())+'.xls')
 
     # if the file is already present
@@ -22,7 +22,7 @@ def output(filename, xlsheet,num, name, present):
     style1 = xlwt.easyxf(num_format_str='D-MMM-YY')
     sh.write(0, 0, datetime.now().date(), style1)
 
-    col1_name = 'ID'
+    col1_name = 'RollNo'
     col2_name = 'NAME'
     col3_name = 'PRESENT'
 
@@ -30,9 +30,9 @@ def output(filename, xlsheet,num, name, present):
     sh.write(1, 1, col2_name, style0)
     sh.write(1, 2, col3_name, style0)
 
-    sh.write(num+1, 0, num)
-    sh.write(num+1, 1, name)
-    sh.write(num+1, 2, present)
+    sh.write(rollNO+1, 0, rollNO)
+    sh.write(rollNO+1, 1, name)
+    sh.write(rollNO+1, 2, present)
 
     fullname = filename+str(datetime.now().date())+'.xls'
     book.save('Attendance/'+fullname)

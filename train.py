@@ -36,7 +36,7 @@ lbl.place(x=295, y=100)
 txt = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
 txt.place(x=595, y=115)
 
-# # to get Name of student
+# to get Name of student
 lbl2 = tk.Label(window, text="Enter Name", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
 lbl2.place(x=295, y=200)
 
@@ -50,13 +50,21 @@ lbl4.place(x=295, y=300)
 txt4 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
 txt4.place(x=595, y=315)
 
+# to get Roll No of student
+lbl5 = tk.Label(window, text="Enter Roll No", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
+lbl5.place(x=295, y=400)
+
+txt5 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
+txt5.place(x=595, y=415)
+
+# Notification Label
 lbl3 = tk.Label(window, text="Notification : ", width=20, fg="red", bg="yellow", height=2,
                 font=('times', 15, ' bold underline '))
-lbl3.place(x=295, y=400)
+lbl3.place(x=295, y=500)
 
-message = tk.Label(window, text="", bg="yellow", fg="red", width=30, height=2, activebackground="yellow",
+message = tk.Label(window, text="", bg="yellow", fg="red", width=42, height=2, activebackground="yellow",
                    font=('times', 15, ' bold '))
-message.place(x=595, y=400)
+message.place(x=595, y=500)
 
 lbl3 = tk.Label(window, text="Attendance : ", width=20, fg="red", bg="yellow", height=2,
                 font=('times', 15, ' bold  underline'))
@@ -95,14 +103,18 @@ def is_number(s):
 
 # function to capture the images and save in directory
 def TakeImages():
-    # get the Id and Name from textbox
+    # get the Id, Name, Class, Roll no from textbox
     Id = (txt.get())
     name = (txt2.get())
     Class = (txt4.get())
+    rollNo = (txt5.get())
+
+    # to check for Id and name
     if is_number(Id) and name.isalpha():
         cam = cv2.VideoCapture(0)
         harcascadePath = "haarcascade_frontalface_default.xml"
         detector = cv2.CascadeClassifier(harcascadePath)
+        # sampleNum is used to get only a maximum of 60 images
         sampleNum = 0
         while True:
             ret, img = cam.read()
@@ -120,13 +132,16 @@ def TakeImages():
             if cv2.waitKey(100) & 0xFF == ord('q'):
                 break
             # break if the sample number is more than 100
-            elif sampleNum > 60:
+            elif sampleNum > 59:
                 break
         cam.release()
         cv2.destroyAllWindows() 
         res = "Images Saved for ID : " + Id + " Name : " + name
-        row = [Id, name, Class]
-        with open('StudentDetails\StudentDetails.csv','a+') as csvFile:
+        # columns used for saving student details
+        row = [Id, name, Class, rollNo]
+
+        # we keep a single Student Details file which which will be used for all the students of all the classes
+        with open('StudentDetails\StudentDetails.csv', 'a+') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(row)
         csvFile.close()
@@ -149,6 +164,8 @@ def TrainImages():
     detector = cv2.CascadeClassifier(harcascadePath)
     faces, Id = getImagesAndLabels("TrainingImage")
     recognizer.train(faces, np.array(Id))
+
+    # creating the trainer
     recognizer.save("Trainer.yml")
     res = "Image Trained"
     # +",".join(str(f) for f in Id)
@@ -201,16 +218,17 @@ def TrackImages():
     # to start capturing videos
     cam = cv2.VideoCapture(0)
     font = cv2.FONT_HERSHEY_SIMPLEX        
-    col_names = ['Id', 'Name', 'Class', 'Date', 'Time']
+    col_names = ['Id', 'Name', 'Class', 'RollNO', 'Date', 'Time']
     attendance = pd.DataFrame(columns=col_names)
 
     # variable used as flag when recognized
     accepted = False
     xlName = 'Name'
-    xlId = 0
     xlClass = 'Class'
+    xlRollNo = 0
     filename = 'filename'
 
+    # recognition is performed
     while not accepted:
         ret, im = cam.read()
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
@@ -223,12 +241,24 @@ def TrackImages():
                 ts = time.time()
                 date = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y')
                 timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+
+                # we get the name as numpy element which includes ['.......']
                 aa = df.loc[df['Id'] == Id]['Name'].values
+
+                # we find only string using regex and convert to string using numpy function
                 xlName = " ".join(re.findall("[a-zA-Z]+", np.array2string(aa)))
-                xlId = pd.to_numeric(Id)
+
+                # similarly we find the class of student
                 xlClass = " ".join(re.findall("[a-zA-Z0-9]+", np.array2string(df.loc[df['Id'] == Id]['Class'].values)))
+
+                # we find the roll no which is of numpy type and covert to string
+                RollNO = "".join(re.findall("[0-9]", np.array2string(df.loc[df['Id'] == Id]['RollNO'].values)))
+                # we then convert the above string to integer to pass as an argument later
+                xlRollNo = int(RollNO)
+
+                # to display detail in the image frame
                 tt = str(Id)+"-"+aa
-                attendance.loc[len(attendance)] = [Id, aa, xlClass, date, timeStamp]
+                attendance.loc[len(attendance)] = [Id, xlName, xlClass, xlRollNo, date, timeStamp]
                 accepted = True
 
             else:
@@ -246,19 +276,13 @@ def TrackImages():
     date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
     timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
     # fileName = "Attendance\Attendance_"+date+".csv"
-    filename = xlWrite.output(xlClass + ' Attendance ', xlClass, xlId, xlName, 'yes')
     print(attendance)
+    # we pass the argument to create an xml file according to class and date
+    filename = xlWrite.output(xlClass + ' Attendance ', xlClass, xlRollNo, xlName, 'yes')
 
     cam.release()
     cv2.destroyAllWindows()
 
-    # check if the file exists , then append else create one
-    # if path.exists(fileName):
-    #     attendance.to_csv(fileName, mode='a')
-    #     print("File exists")
-    # else:
-    #     attendance.to_csv(fileName, mode='w')
-    #     print("File Created")
     res = attendance
     message2.configure(text=res)
 
@@ -272,32 +296,39 @@ def close_window():
         window.destroy()
 
 
-clearButton = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
+# these are the clear button used in the layout
+clearButton = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=1,
                         activebackground="Red", font=('times', 15, ' bold '))
-clearButton.place(x=960, y=100)
+clearButton.place(x=860, y=110)
 
-clearButton2 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
+clearButton2 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=1,
                          activebackground="Red", font=('times', 15, ' bold '))
-clearButton2.place(x=960, y=200)
+clearButton2.place(x=860, y=210)
 
-clearButton3 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
+clearButton3 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=1,
                          activebackground="Red", font=('times', 15, ' bold '))
-clearButton3.place(x=960, y=300)
+clearButton3.place(x=860, y=310)
 
-takeImg = tk.Button(window, text="Take Images", command=TakeImages, fg="red", bg="yellow", width=20, height=3,
+clearButton4 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=1,
+                         activebackground="Red", font=('times', 15, ' bold '))
+clearButton4.place(x=860, y=410)
+
+# these are the functional buttons used in the layout
+takeImg = tk.Button(window, text="Take Images", command=TakeImages, fg="red", bg="yellow", width=20, height=2,
                     activebackground="Red", font=('times', 15, ' bold '))
-takeImg.place(x=95, y=500)
+takeImg.place(x=95, y=570)
 
-trainImg = tk.Button(window, text="Train Images", command=TrainImages, fg="red", bg="yellow", width=20, height=3,
+trainImg = tk.Button(window, text="Train Images", command=TrainImages, fg="red", bg="yellow", width=20, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
-trainImg.place(x=395, y=500)
+trainImg.place(x=395, y=570)
 
-trackImg = tk.Button(window, text="Track Images", command=TrackImages, fg="red", bg="yellow", width=20, height=3,
+trackImg = tk.Button(window, text="Track Images", command=TrackImages, fg="red", bg="yellow", width=20, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
-trackImg.place(x=695, y=500)
+trackImg.place(x=695, y=570)
 
 # we should call the function close_windows() in command
-quitWindow = tk.Button(window, text="Quit", command=window.destroy, fg="red", bg="yellow", width=20, height=3,activebackground="Red", font=('times', 15, ' bold '))
-quitWindow.place(x=995, y=500)
+quitWindow = tk.Button(window, text="Quit", command=window.destroy, fg="red", bg="yellow", width=20, height=2,
+                       activebackground="Red", font=('times', 15, ' bold '))
+quitWindow.place(x=995, y=570)
 
 window.mainloop()
