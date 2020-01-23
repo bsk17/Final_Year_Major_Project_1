@@ -1,20 +1,18 @@
 
 import tkinter as tk
-from tkinter import Message, Text, messagebox
+from tkinter import messagebox
 import cv2
 import os
 import os.path
-from os import path
-import shutil
 import csv
 import numpy as np
-from PIL import Image, ImageTk
+from PIL import Image
 import pandas as pd
 import datetime
 import time
-import tkinter.ttk as ttk
 import tkinter.font as font
 import xlWrite
+import re
 
 window = tk.Tk()
 helv36 = tk.font.Font(family='Helvetica', size=36, weight='bold')
@@ -22,49 +20,35 @@ window.title("Face_Recogniser_Major_Project")
 window.geometry('1280x720')
 window.configure(background='blue')
 
-# window.attributes('-fullscreen', True)
-
 window.grid_rowconfigure(0, weight=1)
 window.grid_columnconfigure(0, weight=1)
 
-# path = "profile.jpg"
-
-# Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
-# img = ImageTk.PhotoImage(Image.open(path))
-
-# The Label widget is a standard Tkinter widget used to display a text or image on the screen.
-# panel = tk.Label(window, image = img)
-
-
-# panel.pack(side = "left", fill = "y", expand = "no")
-
-# cv_img = cv2.imread("img541.jpg")
-# x, y, no_channels = cv_img.shape
-# canvas = tk.Canvas(window, width = x, height =y)
-# canvas.pack(side="left")
-# photo = PIL.ImageTk.PhotoImage(image = PIL.Image.fromarray(cv_img))
-# Add a PhotoImage to the Canvas
-# canvas.create_image(0, 0, image=photo, anchor=tk.NW)
-
-# msg = Message(window, text='Hello, world!')
-
 # Font is a tuple of (font_family, size_in_points, style_modifier_string)
 message = tk.Label(window, text="Face-Recognition-Based-Attendance-Management-System", bg="Green",
-                   fg="white", width=50, height=3, font=('times', 30, 'italic bold underline'))
+                   fg="white", width=50, height=1, font=('times', 25, 'italic bold underline'))
 
-message.place(x=95, y=20)
+message.place(x=195, y=20)
 
+# to get ID of student
 lbl = tk.Label(window, text="Enter ID", width=20, height=2, fg="red", bg="yellow", font=('times', 15, ' bold '))
-lbl.place(x=295, y=200)
+lbl.place(x=295, y=100)
 
 txt = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
-txt.place(x=595, y=215)
+txt.place(x=595, y=115)
 
+# # to get Name of student
 lbl2 = tk.Label(window, text="Enter Name", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
-lbl2.place(x=295, y=300)
+lbl2.place(x=295, y=200)
 
 txt2 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
-txt2.place(x=595, y=315)
+txt2.place(x=595, y=215)
+
+# to get Class of student
+lbl4 = tk.Label(window, text="Enter Sem-Sec", width=20, fg="red", bg="yellow", height=2, font=('times', 15, ' bold '))
+lbl4.place(x=295, y=300)
+
+txt4 = tk.Entry(window, width=20, bg="yellow", fg="red", font=('times', 15, ' bold '))
+txt4.place(x=595, y=315)
 
 lbl3 = tk.Label(window, text="Notification : ", width=20, fg="red", bg="yellow", height=2,
                 font=('times', 15, ' bold underline '))
@@ -114,6 +98,7 @@ def TakeImages():
     # get the Id and Name from textbox
     Id = (txt.get())
     name = (txt2.get())
+    Class = (txt4.get())
     if is_number(Id) and name.isalpha():
         cam = cv2.VideoCapture(0)
         harcascadePath = "haarcascade_frontalface_default.xml"
@@ -140,7 +125,7 @@ def TakeImages():
         cam.release()
         cv2.destroyAllWindows() 
         res = "Images Saved for ID : " + Id + " Name : " + name
-        row = [Id, name]
+        row = [Id, name, Class]
         with open('StudentDetails\StudentDetails.csv','a+') as csvFile:
             writer = csv.writer(csvFile)
             writer.writerow(row)
@@ -172,10 +157,9 @@ def TrainImages():
 
 def getImagesAndLabels(path):
     # get the path of all the files in the folder
-    imagePaths=[os.path.join(path,f) for f in os.listdir(path)] 
-    # print(imagePaths)
+    imagePaths=[os.path.join(path, f) for f in os.listdir(path)]
     
-    # create empth face list
+    # create empty face list
     faces = []
 
     # create empty ID list
@@ -202,7 +186,7 @@ def getImagesAndLabels(path):
 def TrackImages():
     # creating the LBPH recognizer
     recognizer = cv2.face.LBPHFaceRecognizer_create()
-    #cv2.createLBPHFaceRecognizer()
+    # cv2.createLBPHFaceRecognizer()
 
     # reading the data from the trainer file created by training
     recognizer.read("Trainer.yml")
@@ -217,13 +201,14 @@ def TrackImages():
     # to start capturing videos
     cam = cv2.VideoCapture(0)
     font = cv2.FONT_HERSHEY_SIMPLEX        
-    col_names = ['Id', 'Name', 'Date', 'Time']
+    col_names = ['Id', 'Name', 'Class', 'Date', 'Time']
     attendance = pd.DataFrame(columns=col_names)
 
     # variable used as flag when recognized
     accepted = False
     xlName = 'Name'
     xlId = 0
+    xlClass = 'Class'
     filename = 'filename'
 
     while not accepted:
@@ -239,19 +224,16 @@ def TrackImages():
                 date = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y')
                 timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
                 aa = df.loc[df['Id'] == Id]['Name'].values
-                xlName = np.array2string(aa)
+                xlName = " ".join(re.findall("[a-zA-Z]+", np.array2string(aa)))
                 xlId = pd.to_numeric(Id)
+                xlClass = " ".join(re.findall("[a-zA-Z0-9]+", np.array2string(df.loc[df['Id'] == Id]['Class'].values)))
                 tt = str(Id)+"-"+aa
-                attendance.loc[len(attendance)] = [Id, aa, date, timeStamp]
+                attendance.loc[len(attendance)] = [Id, aa, xlClass, date, timeStamp]
                 accepted = True
 
             else:
                 Id = 'Unknown'
                 tt = str(Id)
-
-            # if(conf > 75):
-            #     noOfFile=len(os.listdir("ImagesUnknown"))+1
-            #     cv2.imwrite("ImagesUnknown\Image"+str(noOfFile) + ".jpg", im[y:y+h,x:x+w])
 
             cv2.putText(im, str(tt), (x, y+h), font, 1, (255, 255, 255), 2)
 
@@ -263,10 +245,8 @@ def TrackImages():
     ts = time.time()      
     date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
     timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-    hour, minute, second = timeStamp.split(":")
-    #fileName = "Attendance\Attendance_"+date+".csv"
-    filename = xlWrite.output('attendance', 'class1', xlId, xlName, 'yes')
-    # "_"+Hour+"-"+Minute+"-"+Second+   --  this is used for naming the xml file
+    # fileName = "Attendance\Attendance_"+date+".csv"
+    filename = xlWrite.output('attendance', xlClass, xlId, xlName, 'yes')
     print(attendance)
 
     cam.release()
@@ -294,11 +274,15 @@ def close_window():
 
 clearButton = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
                         activebackground="Red", font=('times', 15, ' bold '))
-clearButton.place(x=960, y=200)
+clearButton.place(x=960, y=100)
 
 clearButton2 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
                          activebackground="Red", font=('times', 15, ' bold '))
-clearButton2.place(x=960, y=300)
+clearButton2.place(x=960, y=200)
+
+clearButton3 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yellow", width=20, height=2,
+                         activebackground="Red", font=('times', 15, ' bold '))
+clearButton3.place(x=960, y=300)
 
 takeImg = tk.Button(window, text="Take Images", command=TakeImages, fg="red", bg="yellow", width=20, height=3,
                     activebackground="Red", font=('times', 15, ' bold '))

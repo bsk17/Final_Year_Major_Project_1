@@ -1,46 +1,25 @@
-import xlwt;
-from datetime import datetime;
-from xlrd import open_workbook;
-from xlwt import Workbook;
+import xlwt
+from datetime import datetime
+from xlrd import open_workbook
 from xlutils.copy import copy
 from pathlib import Path
 
-'''style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on',
-    num_format_str='#,##0.00')
-style1 = xlwt.easyxf(num_format_str='D-MMM-YY')
 
-wb = xlwt.Workbook()
-ws = wb.add_sheet('A Test Sheet')
+def output(filename, xlsheet,num, name, present):
+    my_file = Path('Attendance/'+filename+str(datetime.now().date())+'.xls')
 
-ws.write(0, 0, 1234.56, style0)
-ws.write(1, 0, datetime.now(), style1)
-ws.write(2, 0, 1)
-ws.write(2, 1, 1)
-ws.write(2, 2, xlwt.Formula("A3+B3"))
-
-wb.save('example.xls')
-'''
-
-
-def output(filename, sheet,num, name, present):
-    my_file = Path('Attendance/'+filename+str(datetime.now().date())+'.xls');
+    # if the file is already present
     if my_file.is_file():
-        rb = open_workbook('Attendance/'+filename+str(datetime.now().date())+'.xls');
+        rb = open_workbook('Attendance/'+filename+str(datetime.now().date())+'.xls')
         book = copy(rb)
         sh = book.get_sheet(0)
-        # file exists
     else:
+        # create a new workbook with a new sheet
         book = xlwt.Workbook()
-        sh = book.add_sheet(sheet)
-    style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on',
-                         num_format_str='#,##0.00')
-    style1 = xlwt.easyxf(num_format_str='D-MMM-YY')
+        sh = book.add_sheet(xlsheet)
 
-    #variables = [x, y, z]
-    #x_desc = 'Display'
-    #y_desc = 'Dominance'
-    #z_desc = 'Test'
-    #desc = [x_desc, y_desc, z_desc]
+    style0 = xlwt.easyxf('font: name Times New Roman, color-index red, bold on', num_format_str='#,##0.00')
+    style1 = xlwt.easyxf(num_format_str='D-MMM-YY')
     sh.write(0, 0, datetime.now().date(), style1)
 
     col1_name = 'ID'
@@ -54,8 +33,7 @@ def output(filename, sheet,num, name, present):
     sh.write(num+1, 0, num)
     sh.write(num+1, 1, name)
     sh.write(num+1, 2, present)
-    # You may need to group the variables together
-    # for n, (v_desc, v) in enumerate(zip(desc, variables)):
-    fullname = filename+str(datetime.now().date())+'.xls';
+
+    fullname = filename+str(datetime.now().date())+'.xls'
     book.save('Attendance/'+fullname)
     return fullname
