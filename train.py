@@ -102,20 +102,20 @@ def is_number(s):
 
 
 # function to capture the images and save in directory
-def TakeImages():
+def take_images():
     # get the Id, Name, Class, Roll no from textbox
-    Id = (txt.get())
-    name = (txt2.get())
-    Class = (txt4.get())
-    rollNo = (txt5.get())
+    id_input = (txt.get())
+    name_input = (txt2.get())
+    class_input = (txt4.get())
+    roll_no_input = (txt5.get())
 
     # to check for Id and name
-    if is_number(Id) and name.isalpha():
+    if is_number(id_input) and name_input.isalpha() and is_number(roll_no_input):
         cam = cv2.VideoCapture(0)
-        harcascadePath = "haarcascade_frontalface_default.xml"
-        detector = cv2.CascadeClassifier(harcascadePath)
+        harcascade_path = "haarcascade_frontalface_default.xml"
+        detector = cv2.CascadeClassifier(harcascade_path)
         # sampleNum is used to get only a maximum of 60 images
-        sampleNum = 0
+        sample_number = 0
         while True:
             ret, img = cam.read()
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -123,22 +123,22 @@ def TakeImages():
             for (x, y, w, h) in faces:
                 cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
                 # incrementing sample number
-                sampleNum = sampleNum+1
+                sample_number = sample_number+1
                 # saving the captured face in the dataset folder TrainingImage
-                cv2.imwrite("TrainingImage\ " + name + "." + Id + '.' + str(sampleNum) + ".jpg", gray[y:y+h, x:x+w])
+                cv2.imwrite("TrainingImage\ " + name_input + "." + id_input + '.' + str(sample_number) + ".jpg", gray[y:y+h, x:x+w])
                 # display the frame
                 cv2.imshow('frame', img)
             # wait for 100 milli seconds
             if cv2.waitKey(100) & 0xFF == ord('q'):
                 break
             # break if the sample number is more than 100
-            elif sampleNum > 59:
+            elif sample_number > 59:
                 break
         cam.release()
         cv2.destroyAllWindows() 
-        res = "Images Saved for ID : " + Id + " Name : " + name
+        res = "Images Saved for ID : " + id_input + " Name : " + name_input
         # columns used for saving student details
-        row = [Id, name, Class, rollNo]
+        row = [id_input, name_input, class_input, roll_no_input]
 
         # we keep a single Student Details file which which will be used for all the students of all the classes
         with open('StudentDetails\StudentDetails.csv', 'a+') as csvFile:
@@ -146,23 +146,27 @@ def TakeImages():
             writer.writerow(row)
         csvFile.close()
         message.configure(text=res)
+    # if wrong inputs are provided then we check for the cases
     else:
-        if is_number(Id):
+        if is_number(id_input) and is_number(roll_no_input):
             res = "Enter Alphabetical Name"
             message.configure(text=res)
-        if name.isalpha():
+        if name_input.isalpha() and is_number(roll_no_input):
             res = "Enter Numeric Id"
+            message.configure(text=res)
+        if is_number(id_input) and name_input.isalpha():
+            res = "Enter Numeric Roll No"
             message.configure(text=res)
 
 
 # to train the images captured so far
-def TrainImages():
+def train_images():
+    # we create LBPH recognizer
     recognizer = cv2.face_LBPHFaceRecognizer.create()
-    # recognizer = cv2.face.LBPHFaceRecognizer_create()
-    # #$cv2.createLBPHFaceRecognizer()
-    harcascadePath = "haarcascade_frontalface_default.xml"
-    detector = cv2.CascadeClassifier(harcascadePath)
-    faces, Id = getImagesAndLabels("TrainingImage")
+    # we use frontal face features
+    harcascade_path = "haarcascade_frontalface_default.xml"
+    detector = cv2.CascadeClassifier(harcascade_path)
+    faces, Id = get_images_and_label("TrainingImage")
     recognizer.train(faces, np.array(Id))
 
     # creating the trainer
@@ -172,9 +176,9 @@ def TrainImages():
     message.configure(text=res)
 
 
-def getImagesAndLabels(path):
+def get_images_and_label(path):
     # get the path of all the files in the folder
-    imagePaths=[os.path.join(path, f) for f in os.listdir(path)]
+    image_paths = [os.path.join(path, f) for f in os.listdir(path)]
     
     # create empty face list
     faces = []
@@ -183,24 +187,24 @@ def getImagesAndLabels(path):
     Ids = []
 
     # now looping through all the image paths and loading the Ids and the images
-    for imagePath in imagePaths:
+    for imagePath in image_paths:
         # loading the image and converting it to gray scale
-        pilImage = Image.open(imagePath).convert('L')
+        pil_image = Image.open(imagePath).convert('L')
 
         # Now we are converting the PIL image into numpy array
-        imageNp = np.array(pilImage, 'uint8')
+        image_np = np.array(pil_image, 'uint8')
 
         # getting the Id from the image
-        Id = int(os.path.split(imagePath)[-1].split(".")[1])
+        id = int(os.path.split(imagePath)[-1].split(".")[1])
 
         # extract the face from the training image sample
-        faces.append(imageNp)
-        Ids.append(Id)        
+        faces.append(image_np)
+        Ids.append(id)
     return faces, Ids
 
 
 # function which helps in recognizing the images
-def TrackImages():
+def track_images():
     # creating the LBPH recognizer
     recognizer = cv2.face.LBPHFaceRecognizer_create()
     # cv2.createLBPHFaceRecognizer()
@@ -209,10 +213,10 @@ def TrackImages():
     recognizer.read("Trainer.yml")
 
     # xml file containing facial features
-    harcascadePath = "haarcascade_frontalface_default.xml"
-    faceCascade = cv2.CascadeClassifier(harcascadePath)
+    harcascade_path = "haarcascade_frontalface_default.xml"
+    face_cascade = cv2.CascadeClassifier(harcascade_path)
 
-    # to get the id and nanme of student from the csv file created
+    # to get the id and name of student from the csv file created
     df = pd.read_csv("StudentDetails\StudentDetails.csv")
 
     # to start capturing videos
@@ -223,16 +227,15 @@ def TrackImages():
 
     # variable used as flag when recognized
     accepted = False
-    xlName = 'Name'
-    xlClass = 'Class'
-    xlRollNo = 0
-    filename = 'filename'
+    xl_name = 'Name'
+    xl_class = 'Class'
+    xl_roll_no = 0
 
     # recognition is performed
     while not accepted:
         ret, im = cam.read()
         gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
-        faces = faceCascade.detectMultiScale(gray, 1.2, 5)
+        faces = face_cascade.detectMultiScale(gray, 1.2, 5)
 
         for(x, y, w, h) in faces:
             cv2.rectangle(im, (x, y), (x+w, y+h), (225, 0, 0), 2)
@@ -240,25 +243,25 @@ def TrackImages():
             if conf < 50:
                 ts = time.time()
                 date = datetime.datetime.fromtimestamp(ts).strftime('%d-%m-%Y')
-                timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+                time_stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
 
                 # we get the name as numpy element which includes ['.......']
                 aa = df.loc[df['Id'] == Id]['Name'].values
 
                 # we find only string using regex and convert to string using numpy function
-                xlName = " ".join(re.findall("[a-zA-Z]+", np.array2string(aa)))
+                xl_name = " ".join(re.findall("[a-zA-Z]+", np.array2string(aa)))
 
                 # similarly we find the class of student
-                xlClass = " ".join(re.findall("[a-zA-Z0-9]+", np.array2string(df.loc[df['Id'] == Id]['Class'].values)))
+                xl_class = " ".join(re.findall("[a-zA-Z0-9]+", np.array2string(df.loc[df['Id'] == Id]['Class'].values)))
 
                 # we find the roll no which is of numpy type and covert to string
-                RollNO = "".join(re.findall("[0-9]", np.array2string(df.loc[df['Id'] == Id]['RollNO'].values)))
+                roll_no = "".join(re.findall("[0-9]", np.array2string(df.loc[df['Id'] == Id]['RollNO'].values)))
                 # we then convert the above string to integer to pass as an argument later
-                xlRollNo = int(RollNO)
+                xl_roll_no = int(roll_no)
 
                 # to display detail in the image frame
                 tt = str(Id)+"-"+aa
-                attendance.loc[len(attendance)] = [Id, xlName, xlClass, xlRollNo, date, timeStamp]
+                attendance.loc[len(attendance)] = [Id, xl_name, xl_class, xl_roll_no, date, time_stamp]
                 accepted = True
 
             else:
@@ -272,13 +275,14 @@ def TrackImages():
         if cv2.waitKey(1) == ord('q'):
             break
 
-    ts = time.time()      
-    date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-    timeStamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-    # fileName = "Attendance\Attendance_"+date+".csv"
+    # ts = time.time()
+    # date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
+    # time_stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
+    # # fileName = "Attendance\Attendance_"+date+".csv"
     print(attendance)
+
     # we pass the argument to create an xml file according to class and date
-    filename = xlWrite.output(xlClass + ' Attendance ', xlClass, xlRollNo, xlName, 'yes')
+    xlWrite.output(xl_class + ' Attendance ', xl_class, xl_roll_no, xl_name, 'yes')
 
     cam.release()
     cv2.destroyAllWindows()
@@ -314,15 +318,15 @@ clearButton4 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yell
 clearButton4.place(x=860, y=410)
 
 # these are the functional buttons used in the layout
-takeImg = tk.Button(window, text="Take Images", command=TakeImages, fg="red", bg="yellow", width=20, height=2,
+takeImg = tk.Button(window, text="Take Images", command=take_images, fg="red", bg="yellow", width=20, height=2,
                     activebackground="Red", font=('times', 15, ' bold '))
 takeImg.place(x=95, y=570)
 
-trainImg = tk.Button(window, text="Train Images", command=TrainImages, fg="red", bg="yellow", width=20, height=2,
+trainImg = tk.Button(window, text="Train Images", command=train_images, fg="red", bg="yellow", width=20, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
 trainImg.place(x=395, y=570)
 
-trackImg = tk.Button(window, text="Track Images", command=TrackImages, fg="red", bg="yellow", width=20, height=2,
+trackImg = tk.Button(window, text="Track Images", command=track_images, fg="red", bg="yellow", width=20, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
 trackImg.place(x=695, y=570)
 

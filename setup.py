@@ -29,7 +29,7 @@ setup(
     options=options,
     version="0.0.1",
     description='Vision ToolBox',
-    executables=executables, requires=['cv2']
+    executables=executables, requires=['cv2', 'numpy', 'PIL', 'pandas']
 )
 
 
