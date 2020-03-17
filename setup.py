@@ -1,3 +1,6 @@
+# this file contains code to convert the application to executable file
+# not working currently
+
 from cx_Freeze import setup, Executable
 import sys
 import os
@@ -12,7 +15,7 @@ if sys.platform == 'win32':
     base = None
 
 
-executables = [Executable("train.py", base=base)]
+executables = [Executable("main.py", base=base)]
 
 packages = ["idna", "os", "sys", "cx_Freeze", "tkinter", "cv2", "setup",
             "numpy", "PIL", "pandas", "datetime", "time"]
@@ -29,7 +32,7 @@ setup(
     options=options,
     version="0.0.1",
     description='Vision ToolBox',
-    executables=executables, requires=['cv2', 'numpy', 'PIL', 'pandas']
+    executables=executables, requires=['cv2', 'numpy', 'PIL', 'pandas', 'xlwt', 'xlrd', 'xlutils']
 )
 
 
