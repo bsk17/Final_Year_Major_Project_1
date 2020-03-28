@@ -21,6 +21,7 @@ def train_images():
     return res
 
 
+# utility function
 def get_images_and_label(path):
     # get the path of all the files in the folder
     image_paths = [os.path.join(path, f) for f in os.listdir(path)]

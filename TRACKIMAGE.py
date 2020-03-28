@@ -79,10 +79,6 @@ def track_images():
         if cv2.waitKey(1) == ord('q'):
             break
 
-    # ts = time.time()
-    # date = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d')
-    # time_stamp = datetime.datetime.fromtimestamp(ts).strftime('%H:%M:%S')
-    # # fileName = "Attendance\Attendance_"+date+".csv"
     print(attendance)
 
     # we pass the argument to create an xml file according to class and date
