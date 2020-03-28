@@ -1,13 +1,19 @@
+# this program creates the folder and populates it with the photographs taken by open cv
+
 from __future__ import print_function
 import pickle
 import os.path
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaFileUpload
+from googleapiclient.http import MediaFileUpload, MediaUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import glob
+from PIL import Image
 
 # If modifying these scopes, delete the file token.pickle.
+# this is the base url to upload our files
 SCOPES = ['https://www.googleapis.com/auth/drive']
+
 
 def main():
     """Shows basic usage of the Drive v3 API.
@@ -32,15 +38,29 @@ def main():
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
 
+    # this service will contains the credentials and will help us to communicate with the folders inside drive
     service = build('drive', 'v3', credentials=creds)
 
-    file_metadata = {'name': 'driver test'}
-    media = MediaFileUpload('driver test',
-                            mimetype="text/text")
-    file = service.files().create(body=file_metadata,
-                                        media_body=media,
-                                        fields='id').execute()
-    print('File ID: %s' % file.get('id'))
+    # this is the id of the folder named INVOICE in Colab Notebook in google drive
+    folder_id = '1zLxJ-kUlVP3CX1pWgpVcK_awrsiGMstt'
+
+    # this is the additional info we provide to this program
+    for filename in glob.glob('TrainingImage/*.jpg'):
+        file_metadata = {
+                'name': filename,
+                'parents': [folder_id]
+        }
+
+        # need to improve this filename for proper uploading of images
+        media = MediaFileUpload(filename,
+                                mimetype='image/jpg',
+                                resumable=True)
+        file = service.files().create(body=file_metadata,
+                                            media_body=media,
+                                            fields='id').execute()
+
+        print('File ID: %s' % file.get('id'))
+
 
 if __name__ == '__main__':
     main()
