@@ -1,5 +1,9 @@
 # this program creates the folder and populates it with the photographs taken by open cv if not present in the drive
 
+# if we are changing the google account then make sure to get the credentials for the new account
+# then run this file to get new token.pickle
+# run once again now we are okay to go
+
 from __future__ import print_function
 import pickle
 import os.path
@@ -26,14 +30,18 @@ def main():
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
+
     # If there are no (valid) credentials available, let the user log in.
     if not creds or not creds.valid:
+
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
+
             creds = flow.run_local_server(port=0)
+
         # Save the credentials for the next run
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
@@ -41,8 +49,11 @@ def main():
     # this service will contains the credentials and will help us to communicate with the folders inside drive
     service = build('drive', 'v3', credentials=creds)
 
-    # this is the id of the folder named Captured_Images in Colab Notebook in google drive
-    folder_id = '1zLxJ-kUlVP3CX1pWgpVcK_awrsiGMstt'
+    # this is the id of the folder named Captured_Images in Colab Notebook in google drive(Bijin)
+    # folder_id = '1zLxJ-kUlVP3CX1pWgpVcK_awrsiGMstt'
+
+    # this is the id of the folder name Captured Images in Colab Notebook in google drive(Project)
+    folder_id = '1hrjKfPAk1DerD0zXOOoOxvtCT5qhVMAy'
 
     # this function will check for the image in Drive already present or not
     # if present then we skip the image and upload only if it is not present
