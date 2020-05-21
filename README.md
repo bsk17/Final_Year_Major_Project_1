@@ -24,4 +24,6 @@ How It Works (User perspective)?
   the student is registered as Present.
   
 Future Works...
-  Deploying the whole project using Raspberry PI.  
+  Deploying the whole project using Raspberry PI.
+ 
+This project has been developed for both windows and linux platforms.
