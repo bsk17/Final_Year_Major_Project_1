@@ -19,7 +19,7 @@ from PIL import Image
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 
-def main():
+def populate():
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
@@ -111,6 +111,9 @@ def main():
 
             print('Uploaded Image ID: %s' % file.get('id'))
 
+    res = "Images have been uploaded to your Drive. Train your model from Colab"
+    return res
+
 
 if __name__ == '__main__':
-    main()
+    populate()

@@ -5,6 +5,7 @@ import csv
 import tkinter.font as font
 from TRACKIMAGE import *
 from TRAINIMAGES import *
+from folder_populator_drive import *
 
 window = tk.Tk()
 helv36 = tk.font.Font(family='Helvetica', size=36, weight='bold')
@@ -53,7 +54,7 @@ lbl3 = tk.Label(window, text="Notification : ", width=20, fg="red", bg="yellow",
                 font=('times', 15, ' bold underline '))
 lbl3.place(x=295, y=500)
 
-message = tk.Label(window, text="", bg="yellow", fg="red", width=42, height=2, activebackground="yellow",
+message = tk.Label(window, text="", bg="yellow", fg="red", width=55, height=2, activebackground="yellow",
                    font=('times', 15, ' bold '))
 message.place(x=595, y=500)
 
@@ -62,7 +63,7 @@ lbl3 = tk.Label(window, text="Attendance : ", width=20, fg="red", bg="yellow", h
 lbl3.place(x=295, y=650)
 
 
-message2 = tk.Label(window, text="", fg="red", bg="yellow", activeforeground="green", width=30, height=2,
+message2 = tk.Label(window, text="", fg="red", bg="yellow", activeforeground="green", width=55, height=2,
                     font=('times', 15, ' bold '))
 message2.place(x=595, y=650)
 
@@ -137,6 +138,12 @@ def set_attendance():
     message2.configure(text=res)
 
 
+# this function wil upload all the images in google drive
+def population_status():
+    res = populate()
+    message.configure(text=res)
+
+
 # utility function to clear the text
 def clear():
     txt.delete(0, 'end')
@@ -189,20 +196,24 @@ clearButton4 = tk.Button(window, text="Clear", command=clear, fg="red", bg="yell
 clearButton4.place(x=860, y=410)
 
 # these are the functional buttons used in the layout
-takeImg = tk.Button(window, text="Take Images", command=take_images, fg="red", bg="yellow", width=20, height=2,
+takeImg = tk.Button(window, text="Take Images", command=take_images, fg="red", bg="yellow", width=10, height=2,
                     activebackground="Red", font=('times', 15, ' bold '))
-takeImg.place(x=95, y=570)
+takeImg.place(x=195, y=570)
 
-trainImg = tk.Button(window, text="Train Images", command=image_trainer, fg="red", bg="yellow", width=20, height=2,
+trainImg = tk.Button(window, text="Train Images", command=image_trainer, fg="red", bg="yellow", width=10, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
 trainImg.place(x=395, y=570)
 
-trackImg = tk.Button(window, text="Track Images", command=set_attendance, fg="red", bg="yellow", width=20, height=2,
+populate_drive = tk.Button(window, text="Populate Drive", command=population_status, fg="red", bg="yellow", width=10, height=2,
+                           activebackground="Red", font=('times', 15, 'bold'))
+populate_drive.place(x=600, y=570)
+
+trackImg = tk.Button(window, text="Track Images", command=set_attendance, fg="red", bg="yellow", width=10, height=2,
                      activebackground="Red", font=('times', 15, ' bold '))
-trackImg.place(x=695, y=570)
+trackImg.place(x=795, y=570)
 
 # we should call the function close_windows() in command
-quitWindow = tk.Button(window, text="Quit", command=window.destroy, fg="red", bg="yellow", width=20, height=2,
+quitWindow = tk.Button(window, text="Quit", command=window.destroy, fg="red", bg="yellow", width=10, height=2,
                        activebackground="Red", font=('times', 15, ' bold '))
 quitWindow.place(x=995, y=570)
 
