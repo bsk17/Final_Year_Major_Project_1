@@ -1,6 +1,7 @@
 # this program creates the folder and populates it with the photographs taken by open cv if not present in the drive
 
 # if we are changing the google account then make sure to get the credentials for the new account
+# to get the credentials we need to enable the api for te project from official google docs and download the credentials
 # then run this file to get new token.pickle
 # run once again now we are okay to go
 
@@ -50,10 +51,10 @@ def populate():
     service = build('drive', 'v3', credentials=creds)
 
     # this is the id of the folder named Captured_Images in Colab Notebook in google drive(Bijin)
-    # folder_id = '1zLxJ-kUlVP3CX1pWgpVcK_awrsiGMstt'
+    folder_id = '1zLxJ-kUlVP3CX1pWgpVcK_awrsiGMstt'
 
     # this is the id of the folder name Captured Images in Colab Notebook in google drive(Project)
-    folder_id = '1hrjKfPAk1DerD0zXOOoOxvtCT5qhVMAy'
+    # folder_id = '1hrjKfPAk1DerD0zXOOoOxvtCT5qhVMAy'
 
     # this function will check for the image in Drive already present or not
     # if present then we skip the image and upload only if it is not present
