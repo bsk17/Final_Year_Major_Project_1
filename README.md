@@ -1,6 +1,6 @@
 # final_year_project
 
-LBPH model of facial algorithm is used. 
+LBPH algorithm of facial algorithm is used. 
 Haarcascade_Frontal_Face_xml file is used for feature selection of faces.
 
 How It Works (User perspective)?
